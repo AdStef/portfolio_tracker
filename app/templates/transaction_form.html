@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block heading %}{{ t('edit') if txn else t('add_transaction') }}{% endblock %}
+{% block content %}
+{% set v = txn or {} %}
+<form class="background_div panel form_grid" id="txn_form" data-api="{{ '/api/transactions/' ~ txn.id if txn else '/api/transactions' }}"
+      data-method="{{ 'PUT' if txn else 'POST' }}" data-redirect="/transactions">
+  <label>{{ t('date') }}<input class="input" type="date" name="date" required value="{{ v.date or '' }}"></label>
+  <label>{{ t('account') }}
+    <select class="input" name="account_id" required>
+      {% for a in accounts if not a.archived or a.id == v.account_id %}
+        <option value="{{ a.id }}" data-currency="{{ a.currency }}" {{ 'selected' if a.id == v.account_id }}>{{ a.person_name }} / {{ a.name }}</option>
+      {% endfor %}
+    </select></label>
+  <label>{{ t('type') }}
+    <select class="input" name="type" id="txn_type">
+      {% for ty in txn_types %}<option value="{{ ty }}" {{ 'selected' if ty == v.type }}>{{ t('type_' + ty) }}</option>{% endfor %}
+    </select></label>
+  <label data-show="BUY SELL DIVIDEND INTEREST TRANSFER_IN TRANSFER_OUT FEE TAX">{{ t('symbol') }}
+    <input class="input" name="symbol" list="instrument_list" value="{{ v.symbol or '' }}" autocomplete="off"></label>
+  <datalist id="instrument_list">{% for i in instruments %}<option value="{{ i.symbol }}">{{ i.name }} ({{ i.currency }})</option>{% endfor %}</datalist>
+  <fieldset class="form_grid new_instrument" id="new_instrument" hidden>
+    <legend>{{ t('instrument_name') }}</legend>
+    <label>{{ t('name') }}<input class="input" name="instrument_name"></label>
+    <label>{{ t('currency') }}<select class="input" name="instrument_currency">{% for c in currencies %}<option>{{ c }}</option>{% endfor %}</select></label>
+    <label>{{ t('asset_class') }}<select class="input" name="asset_class">{% for c in asset_classes if c != 'FX' %}<option value="{{ c }}">{{ t('class_' + c) }}</option>{% endfor %}</select></label>
+  </fieldset>
+  <label data-show="BUY SELL TRANSFER_IN TRANSFER_OUT">{{ t('quantity') }}<input class="input" name="quantity" inputmode="decimal" value="{{ v.quantity if v.quantity is not none else '' }}"></label>
+  <label data-show="BUY SELL TRANSFER_IN TRANSFER_OUT">{{ t('price') }}<input class="input" name="price" inputmode="decimal" value="{{ v.price if v.price is not none else '' }}"></label>
+  <label data-show="BUY SELL">{{ t('fx_rate') }}<input class="input" name="fx_rate" inputmode="decimal"></label>
+  <label data-show="BUY SELL">{{ t('fee') }}<input class="input" name="fee" inputmode="decimal" value="{{ v.fee or '' }}"></label>
+  <label data-show="SELL DIVIDEND INTEREST">{{ t('tax') }}<input class="input" name="tax" inputmode="decimal" value="{{ v.tax or '' }}"></label>
+  <label>{{ t('amount') }}<input class="input" name="amount" inputmode="decimal" value="{{ (v.cash_amount | abs) if v.cash_amount is defined and v.cash_amount is not none else '' }}">
+    <small class="muted" data-show="BUY SELL">{{ t('amount_hint') }}</small></label>
+  <label>{{ t('cash_currency') }}<select class="input" name="cash_currency" id="cash_currency">{% for c in currencies %}<option {{ 'selected' if c == v.cash_currency }}>{{ c }}</option>{% endfor %}</select></label>
+  <label data-show="FX_EXCHANGE">{{ t('counter_amount') }}<input class="input" name="counter_amount" inputmode="decimal" value="{{ v.counter_amount or '' }}"></label>
+  <label data-show="FX_EXCHANGE">{{ t('counter_currency') }}<select class="input" name="counter_currency">{% for c in currencies %}<option {{ 'selected' if c == v.counter_currency }}>{{ c }}</option>{% endfor %}</select></label>
+  <label>{{ t('amount_pln') }}<input class="input" name="amount_pln" inputmode="decimal" value="{{ v.amount_pln if v.amount_pln is not none and v.amount_pln is defined else '' }}"></label>
+  <label class="wide">{{ t('note') }}<input class="input" name="note" value="{{ v.note or '' }}"></label>
+  <div class="wide form_actions">
+    <button class="btn btn_primary" type="submit">{{ t('save') }}</button>
+    <a class="btn" href="/transactions">{{ t('cancel') }}</a>
+    <ul class="form_errors" id="form_errors"></ul>
+  </div>
+</form>
+{% endblock %}
+{% block scripts %}<script>window.KNOWN_SYMBOLS = {{ instruments | map(attribute='symbol') | list | tojson }};</script>
+<script src="{{ url_for('static', filename='js/txn_form.js') }}"></script>{% endblock %}

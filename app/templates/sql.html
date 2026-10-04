@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block heading %}{{ t('nav_sql') }}{% endblock %}
+{% block content %}
+<form class="background_div panel" id="sql_form">
+  <textarea class="input mono" name="query" rows="6">SELECT a.name, t.type, COUNT(*) AS n, ROUND(SUM(t.cash_amount), 2) AS cash
+FROM txn t JOIN account a ON a.id = t.account_id
+GROUP BY 1, 2 ORDER BY 1, 2;</textarea>
+  <div class="form_actions"><button class="btn btn_primary" type="submit">{{ t('run') }}</button><small class="muted">{{ t('sql_hint') }}</small>
+    <ul class="form_errors" id="form_errors"></ul></div>
+</form>
+<section class="background_div panel"><div class="table_wrap"><table class="data" id="sql_result"></table></div></section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/sql.js') }}"></script>{% endblock %}

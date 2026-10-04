@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block heading %}{{ t('nav_accounts') }}{% endblock %}
+{% block content %}
+<div class="grid_2">
+<section class="background_div panel">
+  <h2>{{ t('people') }}</h2>
+  <table class="data"><tbody>
+    {% for p in people %}
+    <tr><td>
+      <form class="inline_form" data-api="/api/people/{{ p.id }}" data-method="PUT">
+        <input class="input" name="name" value="{{ p.name }}" required>
+        <button class="btn" type="submit">{{ t('save') }}</button>
+        <button type="button" class="link_btn" data-delete="/api/people/{{ p.id }}">{{ t('delete') }}</button>
+      </form>
+    </td></tr>
+    {% endfor %}
+  </tbody></table>
+  <form class="inline_form" data-api="/api/people" data-method="POST">
+    <input class="input" name="name" placeholder="{{ t('name') }}" required>
+    <button class="btn btn_primary" type="submit">{{ t('add_person') }}</button>
+  </form>
+</section>
+
+<section class="background_div panel">
+  <h2>{{ t('add_account') }}</h2>
+  {% if people %}
+  <form class="form_grid" data-api="/api/accounts" data-method="POST">
+    <label>{{ t('person') }}<select class="input" name="person_id">{% for p in people %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></label>
+    <label>{{ t('name') }}<input class="input" name="name" required></label>
+    <label>{{ t('broker') }}<input class="input" name="broker"></label>
+    <label>{{ t('kind') }}<select class="input" name="kind">{% for k in kinds %}<option value="{{ k }}">{{ t('kind_' + k) }}</option>{% endfor %}</select></label>
+    <label>{{ t('currency') }}<select class="input" name="currency">{% for c in currencies %}<option>{{ c }}</option>{% endfor %}</select></label>
+    <div class="form_actions"><button class="btn btn_primary" type="submit">{{ t('add_account') }}</button></div>
+  </form>
+  {% else %}<p class="muted">{{ t('add_person') }} ↖</p>{% endif %}
+</section>
+</div>
+
+<section class="background_div panel">
+  <h2>{{ t('nav_accounts') }}</h2>
+  <div class="table_wrap"><table class="data">
+    <thead><tr><th>{{ t('person') }}</th><th>{{ t('name') }}</th><th>{{ t('broker') }}</th><th>{{ t('kind') }}</th><th>{{ t('currency') }}</th><th>{{ t('archived') }}</th><th class="num">{{ t('transactions_count') }}</th><th></th></tr></thead>
+    <tbody>
+    {% for a in accounts %}
+      <tr>
+        <td colspan="8">
+          <form class="inline_form" data-api="/api/accounts/{{ a.id }}" data-method="PUT">
+            <select class="input" name="person_id">{% for p in people %}<option value="{{ p.id }}" {{ 'selected' if p.id == a.person_id }}>{{ p.name }}</option>{% endfor %}</select>
+            <input class="input" name="name" value="{{ a.name }}" required>
+            <input class="input" name="broker" value="{{ a.broker or '' }}" placeholder="{{ t('broker') }}">
+            <select class="input" name="kind">{% for k in kinds %}<option value="{{ k }}" {{ 'selected' if k == a.kind }}>{{ t('kind_' + k) }}</option>{% endfor %}</select>
+            <select class="input" name="currency">{% for c in currencies %}<option {{ 'selected' if c == a.currency }}>{{ c }}</option>{% endfor %}</select>
+            <label class="check"><input type="checkbox" name="archived" value="1" {{ 'checked' if a.archived }}> {{ t('archived') }}</label>
+            <span class="muted">{{ a.txn_count }} {{ t('rows') }}</span>
+            <button class="btn" type="submit">{{ t('save') }}</button>
+            {% if not a.txn_count %}<button type="button" class="link_btn" data-delete="/api/accounts/{{ a.id }}">{{ t('delete') }}</button>{% endif %}
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}

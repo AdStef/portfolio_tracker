@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="{{ lang }}">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ t('app_name') }}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='icons/capy.png') }}">
+</head>
+<body>
+<div class="main_wrapper">
+  <aside class="sidebar">
+    <div class="nameplate_wrapper">
+      <div class="nameplate">
+        <div class="nameplate_logo"><img class="rat" src="{{ url_for('static', filename='dancing-rat.gif') }}" alt=""></div>
+        <div class="nameplate_text">{{ t('app_name') }}</div>
+      </div>
+    </div>
+    <nav class="sidebar_nav">
+      {% set nav = [('dashboard', '/', 'dashboard.svg', 'nav_dashboard'),
+                    ('holdings', '/holdings', 'portfolio.svg', 'nav_holdings'),
+                    ('transactions', '/transactions', 'plus.svg', 'nav_transactions'),
+                    ('accounts', '/accounts', 'accounts.svg', 'nav_accounts'),
+                    ('instruments', '/instruments', 'portfolio.svg', 'nav_instruments'),
+                    ('sql', '/sql', 'sql.svg', 'nav_sql')] %}
+      {% for key, href, icon, label in nav %}
+        <a href="{{ href }}" class="{{ 'active' if page == key }}"><img src="{{ url_for('static', filename='icons/' + icon) }}" alt=""><span>{{ t(label) }}</span></a>
+      {% endfor %}
+    </nav>
+    <div class="sidebar_settings">
+      <label>{{ t('language') }}
+        <select id="lang_switch">{% for l in languages %}<option value="{{ l }}" {{ 'selected' if l == lang }}>{{ l | upper }}</option>{% endfor %}</select>
+      </label>
+      <label>{{ t('currency') }}
+        <select id="ccy_switch">{% for c in display_currencies %}<option value="{{ c }}" {{ 'selected' if c == display_ccy }}>{{ c }}</option>{% endfor %}</select>
+      </label>
+    </div>
+  </aside>
+
+  <div class="rightside_wrapper">
+    <div class="topbar_wrapper">
+      <div class="topbar">
+        <div class="topbar_metrics" id="metrics">{% block metrics %}<h1 class="page_title">{% block heading %}{% endblock %}</h1>{% endblock %}</div>
+        <div class="topbar_actions">
+          {% block actions %}{% endblock %}
+          <div class="add_button_wrapper">
+            <button class="add_button" id="add_button" type="button" aria-haspopup="true" aria-expanded="false">
+              <img src="{{ url_for('static', filename='icons/plus.svg') }}" alt=""><span>{{ t('add') }}</span>
+              <img src="{{ url_for('static', filename='icons/dropdown.svg') }}" alt="">
+            </button>
+            <div class="background_div add_menu" id="add_menu" hidden>
+              <a class="add_menu_button" href="/transactions/new"><div class="svg_wrapper"><img src="{{ url_for('static', filename='icons/plus.svg') }}" alt=""></div><p>{{ t('add_transaction') }}</p></a>
+              <a class="add_menu_button" href="/import"><div class="svg_wrapper"><img src="{{ url_for('static', filename='icons/sql.svg') }}" alt=""></div><p>{{ t('import_csv') }}</p></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <main>{% block content %}{% endblock %}</main>
+  </div>
+</div>
+<div id="toast" class="toast" hidden></div>
+<script>
+  window.I18N = {{ i18n_bundle | tojson }};
+  window.LANG = {{ lang | tojson }};
+  window.DISPLAY_CCY = {{ display_ccy | tojson }};
+</script>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

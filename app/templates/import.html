@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block heading %}{{ t('import_csv') }}{% endblock %}
+{% block content %}
+<form class="background_div panel form_grid" id="import_form">
+  <label>{{ t('import_profile') }}
+    <select class="input" name="profile">{% for i in importers %}<option value="{{ i.key }}" title="{{ i.description }}">{{ i.label }}</option>{% endfor %}</select></label>
+  <label>{{ t('import_account') }}
+    <select class="input" name="account_id"><option value="">—</option>
+      {% for a in accounts if not a.archived %}<option value="{{ a.id }}">{{ a.person_name }} / {{ a.name }}</option>{% endfor %}</select>
+    <small class="muted">{{ t('import_account_hint') }}</small></label>
+  <label class="wide">CSV<input class="input" type="file" name="file" accept=".csv,text/csv" required></label>
+  <div class="wide form_actions">
+    <button class="btn btn_primary" type="submit">{{ t('preview') }}</button>
+    <a class="btn" href="/api/import/template.csv">{{ t('download_template') }}</a>
+    <ul class="form_errors" id="form_errors"></ul>
+  </div>
+</form>
+
+<section class="background_div panel" id="preview_panel" hidden>
+  <div class="panel_head"><h2>{{ t('preview') }}</h2><span id="preview_summary" class="muted"></span>
+    <button class="btn btn_primary" id="commit_btn" type="button">{{ t('import_commit') }}</button></div>
+  <p id="new_instruments" class="muted"></p>
+  <div class="table_wrap"><table class="data" id="preview_table">
+    <thead><tr><th>{{ t('line') }}</th><th>{{ t('status') }}</th><th>{{ t('date') }}</th><th>{{ t('account') }}</th><th>{{ t('type') }}</th>
+      <th>{{ t('symbol') }}</th><th class="num">{{ t('quantity') }}</th><th class="num">{{ t('price') }}</th><th class="num">{{ t('amount') }}</th><th>{{ t('errors') }}</th></tr></thead>
+    <tbody></tbody></table></div>
+</section>
+
+<section class="background_div panel">
+  <h2>{{ t('import_history') }}</h2>
+  {% if batches %}
+  <table class="data"><thead><tr><th>#</th><th>{{ t('date') }}</th><th>CSV</th><th>{{ t('import_profile') }}</th><th class="num">{{ t('rows') }}</th><th></th></tr></thead>
+  <tbody>{% for b in batches %}<tr><td>{{ b.id }}</td><td>{{ b.imported_at }}</td><td>{{ b.filename }}</td><td>{{ b.profile }}</td><td class="num">{{ b.row_count }}</td>
+    <td><button type="button" class="link_btn" data-delete="/api/import/{{ b.id }}">{{ t('undo') }}</button></td></tr>{% endfor %}</tbody></table>
+  {% else %}<p class="muted">{{ t('none') }}</p>{% endif %}
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/import.js') }}"></script>{% endblock %}

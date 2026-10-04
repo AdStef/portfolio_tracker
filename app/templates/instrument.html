@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block heading %}{{ inst.symbol }}{% endblock %}
+{% block content %}
+<div class="grid_2">
+<section class="background_div panel">
+  <h2>{{ t('edit') }}</h2>
+  <form class="form_grid" data-api="/api/instruments/{{ inst.id }}" data-method="PUT">
+    <label>{{ t('symbol') }}<input class="input" name="symbol" value="{{ inst.symbol }}" required></label>
+    <label>{{ t('name') }}<input class="input" name="name" value="{{ inst.name or '' }}"></label>
+    <label>{{ t('asset_class') }}<select class="input" name="asset_class">{% for c in asset_classes %}<option value="{{ c }}" {{ 'selected' if c == inst.asset_class }}>{{ t('class_' + c) }}</option>{% endfor %}</select></label>
+    <label>{{ t('currency') }}<input class="input" name="currency" value="{{ inst.currency }}" maxlength="3"></label>
+    <label>{{ t('price_source') }}<select class="input" name="price_source">{% for p in providers %}<option value="{{ p.key }}" {{ 'selected' if p.key == inst.price_source }}>{{ p.label }}</option>{% endfor %}</select></label>
+    <label>{{ t('source_symbol') }}<input class="input" name="source_symbol" value="{{ inst.source_symbol or '' }}"></label>
+    <label class="wide">{{ t('source_config') }}<textarea class="input mono" name="source_config" rows="3">{{ inst.source_config or '' }}</textarea></label>
+    <label class="wide">{{ t('note') }}<input class="input" name="note" value="{{ inst.note or '' }}"></label>
+    <div class="wide form_actions"><button class="btn btn_primary" type="submit">{{ t('save') }}</button>
+      <button type="button" class="link_btn" data-delete="/api/instruments/{{ inst.id }}" data-redirect="/instruments">{{ t('delete') }}</button></div>
+  </form>
+</section>
+
+{% if inst.price_source == 'bond_formula' or inst.asset_class == 'BOND_GOV_PL' %}
+<section class="background_div panel">
+  <h2>{{ t('bond_params') }}</h2>
+  <form class="form_grid" data-api="/api/instruments/{{ inst.id }}/bond" data-method="PUT">
+    <label>Series<select class="input" name="series">{% for s in bond_series %}<option {{ 'selected' if bond and bond.series == s }}>{{ s }}</option>{% endfor %}</select></label>
+    <label>{{ t('purchase_date') }}<input class="input" type="date" name="purchase_date" value="{{ bond.purchase_date if bond else '' }}"></label>
+    <label>{{ t('first_rate') }}<input class="input" name="first_rate" inputmode="decimal" value="{{ bond.first_rate if bond and bond.first_rate is not none else '' }}"></label>
+    <label>{{ t('margin') }}<input class="input" name="margin" inputmode="decimal" value="{{ bond.margin if bond else '' }}"></label>
+    <label>{{ t('early_fee') }}<input class="input" name="fee" inputmode="decimal" value="{{ bond.fee if bond else '' }}"></label>
+    <label>period_rates<input class="input" name="period_rates" placeholder="2=5.9, 3=6.1" value="{{ bond.period_rates.items() | map('join', '=') | join(', ') if bond else '' }}"></label>
+    <div class="wide form_actions"><button class="btn btn_primary" type="submit">{{ t('save') }}</button>
+      <span id="bond_preview" class="muted" data-url="/api/instruments/{{ inst.id }}/bond-preview"></span></div>
+  </form>
+</section>
+{% else %}
+<section class="background_div panel">
+  <h2>{{ t('manual_price') }}</h2>
+  <form class="form_grid" data-api="/api/instruments/{{ inst.id }}/prices" data-method="POST">
+    <label>{{ t('date') }}<input class="input" type="date" name="date" required></label>
+    <label>{{ t('price') }} ({{ inst.currency }})<input class="input" name="close" inputmode="decimal"></label>
+    <label>{{ t('set_by_total') }}<input class="input" name="total_value" inputmode="decimal"></label>
+    <div class="form_actions"><button class="btn btn_primary" type="submit">{{ t('save') }}</button></div>
+  </form>
+</section>
+{% endif %}
+</div>
+
+{% if price_rows %}
+<section class="background_div panel">
+  <h2>{{ t('history') }} <span class="muted">({{ price_rows | length }} / {{ price_count }})</span></h2>
+  <div class="table_wrap scroll_y"><table class="data"><thead><tr><th>{{ t('date') }}</th><th class="num">{{ t('price') }}</th><th>{{ t('price_source') }}</th><th></th></tr></thead><tbody>
+  {% for p in price_rows %}<tr><td>{{ p.date }}</td><td class="num">{{ p.close | num(4) }}</td><td>{{ p.source or '' }}</td>
+    <td><button type="button" class="link_btn" data-delete="/api/instruments/{{ inst.id }}/prices/{{ p.date }}">{{ t('delete') }}</button></td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endif %}
+{% endblock %}

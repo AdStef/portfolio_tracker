@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block heading %}{{ t('nav_transactions') }}{% endblock %}
+{% block content %}
+<form class="toolbar" method="get">
+  <select name="person_id" class="input"><option value="">{{ t('person') }}: {{ t('all') }}</option>
+    {% for p in people %}<option value="{{ p.id }}" {{ 'selected' if args.get('person_id') == p.id|string }}>{{ p.name }}</option>{% endfor %}</select>
+  <select name="account_id" class="input"><option value="">{{ t('account') }}: {{ t('all') }}</option>
+    {% for a in accounts %}<option value="{{ a.id }}" {{ 'selected' if args.get('account_id') == a.id|string }}>{{ a.person_name }} / {{ a.name }}</option>{% endfor %}</select>
+  <select name="type" class="input"><option value="">{{ t('type') }}: {{ t('all') }}</option>
+    {% for ty in txn_types %}<option value="{{ ty }}" {{ 'selected' if args.get('type') == ty }}>{{ t('type_' + ty) }}</option>{% endfor %}</select>
+  <select name="instrument_id" class="input"><option value="">{{ t('instrument') }}: {{ t('all') }}</option>
+    {% for i in instruments %}<option value="{{ i.id }}" {{ 'selected' if args.get('instrument_id') == i.id|string }}>{{ i.symbol }}</option>{% endfor %}</select>
+  <button class="btn" type="submit">{{ t('filter') }}</button>
+  <a class="btn btn_primary" href="/transactions/new">{{ t('add_transaction') }}</a>
+  <a class="btn" href="/import">{{ t('import_csv') }}</a>
+</form>
+<section class="background_div panel">
+  {% if rows %}
+  <div class="table_wrap"><table class="data">
+    <thead><tr><th>{{ t('date') }}</th><th>{{ t('person') }}</th><th>{{ t('account') }}</th><th>{{ t('type') }}</th>
+      <th>{{ t('instrument') }}</th><th class="num">{{ t('quantity') }}</th><th class="num">{{ t('price') }}</th>
+      <th class="num">{{ t('fee') }}</th><th class="num">{{ t('amount') }}</th><th>{{ t('note') }}</th><th></th></tr></thead>
+    <tbody>
+    {% for r in rows %}
+      <tr>
+        <td>{{ r.date }}</td><td>{{ r.person_name }}</td><td>{{ r.account_name }}</td><td>{{ t('type_' + r.type) }}</td>
+        <td title="{{ r.instrument_name or '' }}">{{ r.symbol or '' }}</td>
+        <td class="num">{{ r.quantity | num(4) if r.quantity is not none }}</td>
+        <td class="num">{{ r.price | num(4) if r.price is not none }}</td>
+        <td class="num">{{ r.fee | num if r.fee }}</td>
+        <td class="num {{ 'txt_red' if r.cash_amount < 0 else 'txt_green' }}">{{ r.cash_amount | num }} {{ r.cash_currency }}
+          {% if r.counter_amount %}<br><span class="txt_green">+{{ r.counter_amount | num }} {{ r.counter_currency }}</span>{% endif %}</td>
+        <td class="muted">{{ r.note or '' }}</td>
+        <td class="row_actions">
+          <a href="/transactions/{{ r.id }}/edit">{{ t('edit') }}</a>
+          <button type="button" class="link_btn" data-delete="/api/transactions/{{ r.id }}">{{ t('delete') }}</button>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  <div class="pager">
+    {% if page_no > 1 %}<a href="?{{ args | urlencode_page(page_no - 1) }}">‹</a>{% endif %}
+    <span>{{ t('page') }} {{ page_no }}</span>
+    {% if has_next %}<a href="?{{ args | urlencode_page(page_no + 1) }}">›</a>{% endif %}
+  </div>
+  {% else %}<p class="muted">{{ t('no_transactions') }}</p>{% endif %}
+</section>
+{% endblock %}

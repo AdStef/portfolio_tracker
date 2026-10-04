@@ -1,0 +1,9 @@
+services:
+  portfolio:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/data
+      - ./initial_eod_data:/legacy:ro   # only needed for the one-time migration
+    restart: unless-stopped

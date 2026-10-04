@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block heading %}{{ t('nav_instruments') }}{% endblock %}
+{% block content %}
+<section class="background_div panel">
+  <div class="table_wrap"><table class="data">
+    <thead><tr><th>{{ t('symbol') }}</th><th>{{ t('name') }}</th><th>{{ t('asset_class') }}</th><th>{{ t('currency') }}</th>
+      <th>{{ t('price_source') }}</th><th>{{ t('source_symbol') }}</th><th class="num">{{ t('last_price') }}</th><th>{{ t('date') }}</th><th class="num">{{ t('transactions_count') }}</th></tr></thead>
+    <tbody>
+    {% for i in rows %}
+      <tr>
+        <td><a href="/instruments/{{ i.id }}">{{ i.symbol }}</a></td><td>{{ i.name or '' }}</td><td>{{ t('class_' + i.asset_class) }}</td>
+        <td>{{ i.currency }}</td><td>{{ i.price_source }}</td><td>{{ i.source_symbol or '' }}</td>
+        <td class="num">{{ i.last_close | num(4) if i.last_close is not none }}</td><td>{{ i.last_date or '' }}</td><td class="num">{{ i.txn_count }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+</section>
+
+<div class="grid_2">
+<section class="background_div panel">
+  <h2>{{ t('add') }}: {{ t('instrument') }}</h2>
+  <form class="form_grid" data-api="/api/instruments" data-method="POST">
+    <label>{{ t('symbol') }}<input class="input" name="symbol" required placeholder="WSE:XTB / USDPLN"></label>
+    <label>{{ t('name') }}<input class="input" name="name"></label>
+    <label>{{ t('asset_class') }}<select class="input" name="asset_class">{% for c in asset_classes %}<option value="{{ c }}">{{ t('class_' + c) }}</option>{% endfor %}</select></label>
+    <label>{{ t('currency') }}<input class="input" name="currency" value="PLN" maxlength="3"></label>
+    <label>{{ t('price_source') }}<select class="input" name="price_source">{% for p in providers %}<option value="{{ p.key }}">{{ p.label }}</option>{% endfor %}</select></label>
+    <label>{{ t('source_symbol') }}<input class="input" name="source_symbol"></label>
+    <div class="form_actions"><button class="btn btn_primary" type="submit">{{ t('save') }}</button></div>
+  </form>
+</section>
+
+<section class="background_div panel">
+  <h2>{{ t('cpi') }}</h2>
+  <form class="form_grid" data-api="/api/cpi" data-method="POST">
+    <label class="wide"><textarea class="input" name="text" rows="4" placeholder="2024-11;4,7"></textarea><small class="muted">{{ t('cpi_hint') }}</small></label>
+    <div class="form_actions"><button class="btn btn_primary" type="submit">{{ t('save') }}</button></div>
+  </form>
+  <div class="table_wrap scroll_y"><table class="data"><thead><tr><th>{{ t('month') }}</th><th class="num">%</th><th></th></tr></thead><tbody>
+    {% for c in cpi %}<tr><td>{{ c.month }}</td><td class="num">{{ c.yoy }}</td><td><button type="button" class="link_btn" data-delete="/api/cpi/{{ c.month }}">{{ t('delete') }}</button></td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+</div>
+{% endblock %}

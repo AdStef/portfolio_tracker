@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block heading %}{{ t('nav_holdings') }}{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <label>{{ t('scope') }} {% include "_scope.html" %}</label>
+  <span id="snapshot_info" class="muted"></span>
+  <span id="stale_badge" class="badge badge_warn" hidden>{{ t('stale_snapshot') }}</span>
+</div>
+<div id="empty_state" class="background_div panel" hidden>{{ t('no_snapshot') }}</div>
+<section class="background_div panel">
+  <div class="table_wrap"><table class="data" id="holdings_table">
+    <thead><tr>
+      <th>{{ t('instrument') }}</th><th>{{ t('asset_class') }}</th><th>{{ t('account') }}</th>
+      <th class="num">{{ t('quantity') }}</th><th class="num">{{ t('avg_price') }}</th><th class="num">{{ t('price') }}</th>
+      <th class="num">{{ t('value') }}</th><th class="num">{{ t('cost') }}</th><th class="num">{{ t('unrealized') }}</th>
+      <th class="num">{{ t('day_change') }}</th><th class="num">{{ t('weight') }}</th>
+    </tr></thead>
+    <tbody></tbody>
+    <tfoot></tfoot>
+  </table></div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/holdings.js') }}"></script>{% endblock %}

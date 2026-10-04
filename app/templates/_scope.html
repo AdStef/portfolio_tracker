@@ -1,0 +1,11 @@
+<select id="scope_select" class="input">
+  <option value="all">{{ t('all') }}</option>
+  {% for p in people %}
+    <optgroup label="{{ p.name }}">
+      <option value="person:{{ p.id }}">{{ p.name }} — {{ t('all') }}</option>
+      {% for a in accounts if a.person_id == p.id and not a.archived %}
+        <option value="account:{{ a.id }}">{{ a.name }}</option>
+      {% endfor %}
+    </optgroup>
+  {% endfor %}
+</select>

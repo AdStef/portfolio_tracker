@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block metrics %}
+  {% for key in ['gross', 'net', 'profit', 'retirement_net'] %}
+    <div class="background_div topbar_metric" data-metric="{{ key }}">
+      <div class="topbar_metric_title">{{ t(key) }}</div>
+      <div class="topbar_metric_amount">—</div>
+      <div class="topbar_metric_changes"></div>
+    </div>
+  {% endfor %}
+{% endblock %}
+{% block actions %}
+  <button class="btn" id="refresh_btn" type="button">{{ t('refresh_prices') }}</button>
+  <button class="btn" id="recalc_btn" type="button">{{ t('recalculate') }}</button>
+{% endblock %}
+{% block content %}
+<div class="toolbar">
+  <label>{{ t('scope') }} {% include "_scope.html" %}</label>
+  <span id="snapshot_info" class="muted"></span>
+  <span id="stale_badge" class="badge badge_warn" hidden>{{ t('stale_snapshot') }}</span>
+</div>
+<div id="empty_state" class="background_div panel" hidden>{{ t('no_snapshot') }}</div>
+
+<div class="grid_2">
+  <section class="background_div panel">
+    <div class="panel_head">
+      <h2>{{ t('value_over_time') }}</h2>
+      <div class="segmented" id="range_buttons">
+        {% for r in ['1M', '3M', 'YTD', '1Y', '3Y', 'ALL'] %}<button type="button" data-range="{{ r }}" class="{{ 'active' if r == 'ALL' }}">{{ t('range_all') if r == 'ALL' else r }}</button>{% endfor %}
+      </div>
+    </div>
+    <div class="chart_box"><canvas id="history_chart" aria-label="{{ t('value_over_time') }}"></canvas></div>
+  </section>
+  <section class="background_div panel">
+    <h2>{{ t('allocation') }}</h2>
+    <div id="allocation"></div>
+  </section>
+</div>
+
+<section class="background_div panel">
+  <h2>{{ t('accounts_summary') }}</h2>
+  <div class="table_wrap"><table class="data" id="accounts_table">
+    <thead><tr>
+      <th>{{ t('account') }}</th><th>{{ t('person') }}</th><th>{{ t('kind') }}</th>
+      <th class="num">{{ t('gross') }}</th><th class="num">{{ t('net') }}</th><th class="num">{{ t('invested') }}</th>
+      <th class="num">{{ t('profit') }}</th><th class="num">{{ t('day_change') }}</th><th class="num">{{ t('xirr') }}</th>
+    </tr></thead>
+    <tbody></tbody>
+  </table></div>
+</section>
+
+<section class="background_div panel" id="warnings_panel" hidden>
+  <h2>{{ t('warnings') }}</h2>
+  <ul id="warnings" class="warnings"></ul>
+</section>
+{% endblock %}
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
